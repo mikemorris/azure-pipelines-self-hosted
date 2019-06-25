@@ -45,7 +45,7 @@ Expand-Archive -Path agent.zip -DestinationPath $PWD
 
 # Run the config script of the build agent
 
-.\config.cmd --unattended --url "$URL" --auth pat --token "$TOKEN" --pool "$POOL" --agent "$AGENT" --acceptTeeEula --runAsService
+.\config.cmd --unattended --url "$URL" --auth pat --token "$TOKEN" --pool "$POOL" --agent "$AGENT" --replace --runAsService
 
 Stop-Transcript
 exit 0
