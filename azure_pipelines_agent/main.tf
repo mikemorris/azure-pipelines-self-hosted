@@ -112,17 +112,17 @@ resource "azurerm_storage_container" "scripts" {
   container_access_type = "blob"
 }
 
-locals {
-  install_windows_agent_path = "${path.module}/scripts/install_azure_pipelines_windows_agent.ps1"
+data local_file "install_windows_agent_script" {
+  filename = "${path.module}/scripts/install_azure_pipelines_windows_agent.ps1"
 }
 
-resource "azurerm_storage_blob" "install_windows_agent_script" {
-  name                   = basename(local.install_windows_agent_path)
+resource "azurerm_storage_blob" "install_windows_agent_blob" {
+  name                   = basename(data.local_file.install_windows_agent_script.filename)
   resource_group_name    = "${azurerm_resource_group.main.name}"
   storage_account_name   = "${azurerm_storage_account.main.name}"
   storage_container_name = "${azurerm_storage_container.scripts.name}"
   type                   = "block"
-  source                 = local.install_windows_agent_path
+  source                 = data.local_file.install_windows_agent_script.filename
 }
 
 # Custom Script extension to install the Azure Pipelines agent
@@ -138,8 +138,8 @@ resource "azurerm_virtual_machine_extension" "install_windows_agent" {
 
   settings = <<SETTINGS
   {
-  "fileUris": ["${azurerm_storage_blob.install_windows_agent_script.url}"],
-  "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File ./${azurerm_storage_blob.install_windows_agent_script.name} -URL ${var.azure_devops_url} -TOKEN ${var.token} -POOL ${var.pool} -AGENT ${var.agent}"
+  "fileUris": ["${azurerm_storage_blob.install_windows_agent_blob.url}"],
+  "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File ./${azurerm_storage_blob.install_windows_agent_blob.name} -URL ${var.azure_devops_url} -TOKEN ${var.token} -POOL ${var.pool} -AGENT ${var.agent}"
   }
 SETTINGS
 }
